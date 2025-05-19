@@ -3,6 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <title>Feed your Soul</title>
+  <!-- Added these lines -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- At the bottom before </body> -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <style>
 
     html, body {
@@ -11,9 +18,6 @@
       background: linear-gradient(135deg, #0a0a2e, #1a1a4a);
       color: #fff;
       font-family: 'Rajdhani', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       touch-action: none;
       min-height: 100vh;
       width: 100%;
@@ -26,28 +30,55 @@
       letter-spacing: 2px;
     }
 
-    canvas {
-      background: linear-gradient(160deg, #000428 0%, #0a0a2e 100%);
-      margin: 20px 0;
-      border: 2px solid #2c2c6b;
-      border-radius: 15px;
-      touch-action: none;
-      max-width: 400px;
-      height: 490px;
-    }
-    
-    
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Horizontally center canvas + controls */
+  justify-content: center;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 550px; /* Match the larger canvas size for desktop */
+}
 
-    .controls {
-      display: flex;
-      gap: 15px;
-      margin-top: auto;
-      padding: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(5px);
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+
+/* NEW VERSION */
+canvas {
+  background: linear-gradient(160deg, #000428 0%, #0a0a2e 100%);
+  margin: 20px auto;
+  border: 2px solid #2c2c6b;
+  border-radius: 15px;
+  touch-action: none;
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  height: 78vh;
+  max-height: 680px;
+}
+
+
+/* Desktop view: increase canvas size */
+@media (min-width: 768px) {
+  #canvas {
+    max-width: 500px;
+  }
+}
+    
+    
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px auto; /* <-- this centers the entire block */
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 500px;
+}
+
+
 
     button {
       padding: 10px 18px;
@@ -73,44 +104,71 @@
       transform: scale(0.95);
     }
 
-    #info {
-      display: flex;
-      justify-content: space-between;
-      width: 320px;
-      font-size: 18px;
-      font-weight: bold;
-      padding: 15px;
-      margin: 10px 0;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      backdrop-filter: blur(5px);
-    }
+#info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 15px;
+  margin: 10px auto; /* Center it horizontally */
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  text-align: center;
+}
 
     #info div span:first-child {
       color: #4CAF50;
       margin-right: 8px;
     }
+
+/* Made info div responsive */
+#info {
+  width: 100%; /* Was 320px */
+  max-width: 400px; /* Limits expansion on large screens */
+}
+
+/* Added mobile styles */
+@media (max-width: 576px) {
+  h1 { font-size: 2em; }
+  #info { font-size: 16px; padding: 10px; }
+  button { padding: 8px 12px; font-size: 13px; }
+}
+
 </style>
 </head>
 <body>
-  <div id="info" style="display: flex; justify-content: space-between; width: 320px; color: red; font-size: 18px; font-weight: bold;">
+    <!-- ▼ Add this container structure ▼ -->
+  <div class="game-container container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6 text-center">
+
+  <div id="info" style="display: flex; justify-content: space-between; color: red; font-size: 18px; font-weight: bold;">
   <div><span>Duration:</span> <span id="playDuration">00:00</span></div>
   <div><span>Time:</span> <span id="currentTime">:</span></div>
 </div>
 
-  <canvas id="game" width="400" height="600"></canvas>
-  
-  
+<!-- Wrapped canvas in a div -->
+<div class="canvas-wrapper" style="position: relative;">
+  <canvas id="game"></canvas>
+</div>
   
   <div class="controls">
     <button onclick="increaseSpeed()">Speed + </button>
     
-    <button onclick="restartGame()">Restart</button>
+  <button id="restartBtn">Restart</button>
     
     <button onclick="decreaseSpeed()">Speed - </button>
   </div>
+   </div>
+    </div>
+     </div>
 <script>
-
 let startTime = Date.now();
 
 function pad(num) {
@@ -131,7 +189,7 @@ function updateTimeInfo() {
   let hours = date.getHours();
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
+  hours = hours ? hours : 12;
   const mins = pad(date.getMinutes());
   document.getElementById("currentTime").textContent = `${hours}:${mins} ${ampm}`;
 }
@@ -141,6 +199,24 @@ updateTimeInfo(); // initial call
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+
+// Set initial canvas dimensions
+function resizeCanvas() {
+  if (window.innerWidth >= 768) { // Desktop
+    canvas.width = 400;
+    canvas.height = 500;
+  } else { // Mobile
+    canvas.width = Math.min(400, window.innerWidth - 40);
+    canvas.height = window.innerHeight * 0.7;
+  }
+}
+
+// Call on load and resize
+window.addEventListener('load', resizeCanvas);
+window.addEventListener('resize', resizeCanvas);
+
+// Initialize canvas before starting game
+resizeCanvas();
 
 let carX = 100;
 let targetCarX = 100;
@@ -153,8 +229,7 @@ const baseBlockHeight = 40;
 const padding = 20;
 let speed = 3;
 
-
-// Habit lists (merged and deduplicated)
+// Habit lists
 const badHabits = [
   "Laziness", "Distraction", "Procrastination", "Slang Language", "Negativity", "Non Hygiene", "Negative Thoughts",
   "Scrolling", "Overthinking", "Comparison", "Self-Doubt", "Over Analysis", 
@@ -181,7 +256,6 @@ const badHabits = [
    "Early Upsate", "Poor reasoning", "Poor Planning",
   "Closed-mindedness", "Political bias", "Overextension"
 ];
-
 
 const goodHabits = [
   "Focus", "Exercise", "Early Rise", "Fearless", "1M+", "1B+", "$500", "$1k", "Productivity", "Energetic", "Smart", "Reflection", "Calmness", 
@@ -214,9 +288,11 @@ const goodHabits = [
 "Math", "Deep thought", "Deep work", "Deep Focus", "Open mind", "Math skills", "Intelligent",
   "Scientific method", "Romantic", "Scientific thought"
 ];
+
 // Color scheme
-const BAD_COLOR = "#4E342E"; // Dark red
+const BAD_COLOR = "#4E342E";
 const GOOD_COLOR = "#A6243C";
+
 function getTextColor(bgColor) {
   const color = bgColor.replace('#', '');
   const r = parseInt(color.substr(0, 2), 16);
@@ -243,14 +319,13 @@ function drawHabitBlock(obs) {
   ctx.fillText(obs.name, obs.x + blockWidth / 2, obs.y + baseBlockHeight / 2);
 }
 
-// IN THE drawCar() FUNCTION - REPLACE WITH THIS
 function drawCar() {
   const heartX = carX + carRadius;
-  const heartY = canvas.height - baseBlockHeight - carRadius * 3; // Adjusted vertical position
-  const size = carRadius * 2; // Reduced heart size
+  const heartY = canvas.height - baseBlockHeight - carRadius * 3;
+  const size = carRadius * 2;
   const widen = 0.8;
   
-  // Draw heart background first
+  // Draw heart background
   ctx.fillStyle = "#8B0000";
   ctx.beginPath();
   ctx.moveTo(heartX, heartY + size / 4);
@@ -285,13 +360,13 @@ function drawCar() {
   ctx.clip();
   
   // Draw animated wave
-  ctx.fillStyle = "rgba(220, 20, 60, 0.6)"; // Increased opacity
+  ctx.fillStyle = "rgba(220, 20, 60, 0.6)";
   ctx.beginPath();
   ctx.moveTo(0, canvas.height);
   
-  const waveHeight = 12; // Increased wave height
-  const waveLength = 40; // Reduced wavelength
-  const yOffset = heartY + Math.sin(heartTime / 40) * 10; // More dramatic movement
+  const waveHeight = 12;
+  const waveLength = 40;
+  const yOffset = heartY + Math.sin(heartTime / 40) * 10;
   
   for (let x = 0; x <= canvas.width; x++) {
     const y = yOffset + Math.sin((x + heartTime) / waveLength) * waveHeight;
@@ -377,27 +452,42 @@ let lastSpawn = 0;
 
 function gameLoop(timestamp) {
   if (gameOver) {
-    ctx.fillStyle = "#ff0000";
-ctx.font = "bold 40px Arial";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+    // Dark overlay
+    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Game over text
+    ctx.fillStyle = "#FF4D4D";
+    ctx.font = "bold 36px 'Rajdhani', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 60);
+    
+    // Final score
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "28px 'Rajdhani', sans-serif";
+    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
+    
+    // Restart prompt
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.font = "20px 'Rajdhani', sans-serif";
+    ctx.fillText("Tap anywhere to restart", canvas.width / 2, canvas.height / 2 + 60);
     return;
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   carX += (targetCarX - carX) * 0.3;
   drawCar();
-  heartTime += 2; // Add this line
+  heartTime += 2;
   
   obstacles.forEach(obs => drawHabitBlock(obs));
   updateObstacles();
 
   ctx.fillStyle = "#ffffff";
-ctx.font = "bold 30px Arial";
-ctx.textAlign = "center";
-ctx.textBaseline = "top";
-ctx.fillText("Score: " + score, canvas.width / 2, 20);
+  ctx.font = "bold 30px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText("Score: " + score, canvas.width / 2, 20);
 
   if (timestamp - lastSpawn > spawnDelay) {
     spawnObstacle();
@@ -409,16 +499,38 @@ ctx.fillText("Score: " + score, canvas.width / 2, 20);
 }
 
 function restartGame() {
-  carX = 100;
-  targetCarX = 100;
-  obstacles = [];
-  gameOver = false;
-  score = 0;
-  spawnDelay = 2000;
-  lastSpawn = 0;
-  requestAnimationFrame(gameLoop);
+  carX = 100;            // Reset car position
+  targetCarX = 100;      // Reset target position (if used for smooth movement)
+  obstacles = [];        // Clear obstacles array
+  gameOver = false;      // Reset game over flag
+  score = 0;             // Reset score
+  speed = 3;             // Reset speed to initial value
+  spawnDelay = 2000;     // Reset obstacle spawn delay (milliseconds)
+  lastSpawn = 0;         // Reset last spawn time
+  startTime = Date.now(); // Reset game timer
+  requestAnimationFrame(gameLoop); // Restart the game loop
 }
 
+
+// Add this right after your restartGame() function
+document.getElementById('restartBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  restartGame();
+});
+
+// Add restart functionality
+canvas.addEventListener('click', function() {
+  if (gameOver) restartGame();
+});
+
+canvas.addEventListener('touchend', function(e) {
+  if (gameOver) {
+    e.preventDefault();
+    restartGame();
+  }
+});
+
+// Movement controls
 canvas.addEventListener("mousemove", function (e) {
   const rect = canvas.getBoundingClientRect();
   targetCarX = e.clientX - rect.left - carRadius;
@@ -442,7 +554,10 @@ function decreaseSpeed() {
   speedDisplay2.innerText = speed;
 }
 
+// Start the game
 restartGame();
 </script>
+<!-- At the bottom before </body> -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
